@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VideoAssetStatus {
+  READY
+  FAILED
+}
+
+enum ExportJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TransitionType {
+  CUT
+  FADE
+  SLIDELEFT
+}
+
+model VideoAsset {
+  id              String           @id @default(uuid())
+  sourceUrl       String
+  provider        String           @default("youtube")
+  title           String
+  durationSeconds Int
+  sourceVideoId   String?
+  localPath       String
+  thumbnailUrl    String?
+  status          VideoAssetStatus @default(READY)
+  errorMessage    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  exports         ExportJob[]
+}
+
+model ExportJob {
+  id                 String          @id @default(uuid())
+  videoAssetId       String
+  status             ExportJobStatus @default(QUEUED)
+  transition         TransitionType
+  transitionDuration Float           @default(0.6)
+  outputPath         String?
+  outputFilename     String?
+  errorMessage       String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  videoAsset         VideoAsset      @relation(fields: [videoAssetId], references: [id], onDelete: Cascade)
+  clips              ClipSegment[]
+
+  @@index([videoAssetId, status])
+}
+
+model ClipSegment {
+  id          String    @id @default(uuid())
+  exportJobId String
+  sortOrder   Int
+  startMs     Int
+  endMs       Int
+  createdAt   DateTime  @default(now())
+  exportJob   ExportJob @relation(fields: [exportJobId], references: [id], onDelete: Cascade)
+
+  @@index([exportJobId, sortOrder])
+}
