@@ -1,5 +1,7 @@
 # Design Write-Up
 
+> Important limitation: I was not able to get live YouTube importing working reliably in this environment. Because of that, the end-to-end path that depends on a real imported YouTube source is still incomplete, and transition processing and final export can still fail when tested against live YouTube URLs.
+
 ## What I built
 
 I built a small video editor MVP where the user can paste a YouTube link, preview the imported video, define clip ranges, export a merged result, and download the final MP4.
